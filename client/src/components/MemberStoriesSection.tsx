@@ -39,7 +39,7 @@ export default function MemberStoriesSection() {
         
         <div className="grid md:grid-cols-3 gap-8">
           {memberStories.map((story) => (
-            <div key={story.id} className="bg-white rounded-xl shadow-lg overflow-hidden" data-testid={`member-story-${story.id}`}>
+            <div key={story.id} className="bg-white rounded-xl overflow-hidden" data-testid={`member-story-${story.id}`}>
               <img 
                 src={story.image} 
                 alt={`${story.name} success story`}

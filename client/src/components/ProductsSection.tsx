@@ -12,7 +12,7 @@ const products = [
       { label: "Est. program deposit", value: "$334/mo" },
       { label: "Est. total enrolled debt", value: "$25,288" },
       { label: "Est. program cost (includes fees)", value: "$17,218" },
-      { label: "Est. program savings", value: "$8,069 🙌", highlight: true }
+      { label: "Est. program savings", value: "$8,069", highlight: true }
     ],
     benefits: [
       "Experts negotiate your debt for you",
@@ -33,7 +33,7 @@ const products = [
       { label: "Monthly payment", value: "$562" },
       { label: "Loan amount", value: "$20,000" },
       { label: "APR", value: "19.54%" },
-      { label: "Pay down debt sooner", value: "4 years 🙌", highlight: true }
+      { label: "Pay down debt sooner", value: "4 years", highlight: true }
     ],
     benefits: [
       "Consolidate debt, fund major purchases, home improvements",
@@ -54,7 +54,7 @@ const products = [
       { label: "Monthly payment", value: "$951" },
       { label: "Loan amount", value: "$57,150" },
       { label: "Term length", value: "15 Years" },
-      { label: "Est. total savings", value: "$10,000 avg 🙌", highlight: true }
+      { label: "Est. total savings", value: "$10,000 avg", highlight: true }
     ],
     benefits: [
       "Turn home equity into cash, simplify debt",
@@ -77,7 +77,7 @@ export default function ProductsSection() {
         
         <div className="grid lg:grid-cols-3 gap-8">
           {products.map((product) => (
-            <div key={product.id} className="bg-white border border-border rounded-xl shadow-lg overflow-hidden" data-testid={`product-${product.id}`}>
+            <div key={product.id} className="bg-white border border-border rounded-xl overflow-hidden" data-testid={`product-${product.id}`}>
               <img 
                 src={product.image} 
                 alt={`${product.title.toLowerCase()} visual representation`}
@@ -117,7 +117,8 @@ export default function ProductsSection() {
                 
                 <div className="space-y-3">
                   <Button 
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="w-full text-white font-semibold"
+                    style={{ backgroundColor: '#3300FF' }}
                     data-testid={`button-primary-${product.id}`}
                   >
                     {product.primaryCta}

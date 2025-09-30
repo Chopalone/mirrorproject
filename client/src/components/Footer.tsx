@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import bbbLogo from "../assets/bbb-logo.svg";
 import trustpilotStrip from "../assets/tp-strip__1_-cropped.svg";
+import housingLogo from "../assets/housing-logo.webp";
 
 const AchieveFooterLogo = () => (
   <svg className="h-8 w-auto" viewBox="0 0 120 30" fill="none">
@@ -107,9 +108,16 @@ export default function Footer() {
                 <img src={trustpilotStrip} alt="Trustpilot 5 stars" className="w-full h-full object-contain" />
               </div>
               
-              {/* BBB A+ Badge */}
-              <div className="w-16 h-10">
-                <img src={bbbLogo} alt="BBB A+ Rating" className="w-full h-full object-contain" />
+              {/* BBB A+ Badge and Housing Logo - Side by Side */}
+              <div className="flex items-center space-x-3">
+                <div className="w-16 h-10">
+                  <img src={bbbLogo} alt="BBB A+ Rating" className="w-full h-full object-contain" />
+                </div>
+                
+                {/* Housing Logo */}
+                <div className="w-16 h-10">
+                  <img src={housingLogo} alt="Housing Logo" className="w-full h-full object-contain" />
+                </div>
               </div>
               
               {/* Norton Security Badge */}

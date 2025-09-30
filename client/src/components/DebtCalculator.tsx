@@ -1,145 +1,277 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
-
-const AchieveSmallLogo = () => (
-  <svg className="h-8 w-8" style={{ color: '#3300FF' }} viewBox="0 0 30 30" fill="currentColor">
-    <circle cx="15" cy="15" r="10"/>
-  </svg>
-);
+import { Slider } from "@/components/ui/slider";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, TrendingDown, Clock, DollarSign, Target, Zap } from "lucide-react";
 
 export default function DebtCalculator() {
-  const [debtAmount, setDebtAmount] = useState(100000);
+  const [debtAmount, setDebtAmount] = useState(25000);
+  const [monthlyPayment, setMonthlyPayment] = useState(500);
+  const [interestRate, setInterestRate] = useState(18.5);
+  const [results, setResults] = useState({
+    currentPayoffTime: 0,
+    currentTotalInterest: 0,
+    achievePayoffTime: 0,
+    achieveTotalInterest: 0,
+    monthlySavings: 0,
+    totalSavings: 0
+  });
 
   const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`;
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
   };
 
+  const calculateResults = () => {
+    // Current scenario calculations
+    const currentMonthlyRate = interestRate / 100 / 12;
+    const currentPayoffTime = Math.ceil(
+      Math.log(1 + (debtAmount * currentMonthlyRate) / monthlyPayment) / 
+      Math.log(1 + currentMonthlyRate)
+    );
+    const currentTotalInterest = (monthlyPayment * currentPayoffTime) - debtAmount;
+
+    // Achieve scenario (lower interest rate and optimized payment)
+    const achieveInterestRate = 8.5; // Lower rate
+    const achieveMonthlyRate = achieveInterestRate / 100 / 12;
+    const achieveOptimizedPayment = Math.min(monthlyPayment * 1.2, debtAmount * 0.05); // 20% more or 5% of debt
+    const achievePayoffTime = Math.ceil(
+      Math.log(1 + (debtAmount * achieveMonthlyRate) / achieveOptimizedPayment) / 
+      Math.log(1 + achieveMonthlyRate)
+    );
+    const achieveTotalInterest = (achieveOptimizedPayment * achievePayoffTime) - debtAmount;
+
+    const monthlySavings = monthlyPayment - achieveOptimizedPayment;
+    const totalSavings = (monthlyPayment * currentPayoffTime) - (achieveOptimizedPayment * achievePayoffTime);
+
+    setResults({
+      currentPayoffTime,
+      currentTotalInterest,
+      achievePayoffTime,
+      achieveTotalInterest,
+      monthlySavings,
+      totalSavings
+    });
+  };
+
+  useEffect(() => {
+    calculateResults();
+  }, [debtAmount, monthlyPayment, interestRate]);
+
   return (
-    <section className="bg-gray-50 py-16" data-testid="debt-calculator">
+    <section className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-20" data-testid="debt-calculator">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4" data-testid="calculator-title">
-            Save an estimated $1,035 on your monthly payment¹
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4" data-testid="calculator-title">
+            Discover Your Debt Freedom Path
           </h2>
-          <p className="text-lg text-muted-foreground" data-testid="calculator-subtitle">
-            Select your debt amount
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto" data-testid="calculator-subtitle">
+            Get personalized insights and see how much you could save with our debt consolidation solutions
           </p>
         </div>
-        
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Left side - Debt amount selector and comparison */}
-          <div className="bg-white rounded-xl p-8">
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3">Select your debt amount</label>
-              <div className="relative">
-                <select
-                  className="w-full text-xl font-semibold px-4 py-3 rounded-lg border-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  style={{ borderColor: '#3300FF' }}
-                  value={debtAmount}
-                  onChange={(e) => setDebtAmount(parseInt(e.target.value, 10))}
-                  data-testid="debt-amount-select"
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Input Panel */}
+          <div className="lg:col-span-1">
+            <Card className="h-fit border-0 bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">Your Debt Details</h3>
+                
+                {/* Debt Amount Slider */}
+                <div className="mb-8">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Total Debt Amount
+                  </label>
+                  <div className="space-y-4">
+                    <Slider
+                      value={[debtAmount]}
+                      onValueChange={(value) => setDebtAmount(value[0])}
+                      max={100000}
+                      min={5000}
+                      step={1000}
+                      className="w-full"
+                    />
+                    <div className="text-center">
+                      <span className="text-2xl font-bold text-blue-600">
+                        {formatCurrency(debtAmount)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Monthly Payment Slider */}
+                <div className="mb-8">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Current Monthly Payment
+                  </label>
+                  <div className="space-y-4">
+                    <Slider
+                      value={[monthlyPayment]}
+                      onValueChange={(value) => setMonthlyPayment(value[0])}
+                      max={2000}
+                      min={100}
+                      step={50}
+                      className="w-full"
+                    />
+                    <div className="text-center">
+                      <span className="text-xl font-semibold text-gray-800">
+                        {formatCurrency(monthlyPayment)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interest Rate Slider */}
+                <div className="mb-8">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Current Interest Rate
+                  </label>
+                  <div className="space-y-4">
+                    <Slider
+                      value={[interestRate]}
+                      onValueChange={(value) => setInterestRate(value[0])}
+                      max={30}
+                      min={5}
+                      step={0.5}
+                      className="w-full"
+                    />
+                    <div className="text-center">
+                      <span className="text-xl font-semibold text-gray-800">
+                        {interestRate}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <Button 
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                  data-testid="button-calculate"
                 >
-                  {[1000, 5000, 10000, 20000, 30000, 40000, 50000, 75000, 100000].map((v) => (
-                    <option key={v} value={v}>{formatCurrency(v)}</option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#3300FF' }}>
-                    <path d="m6 9 6 6 6-6"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="p-6 rounded-lg border-2 bg-blue-50" style={{ borderColor: '#3300FF' }} data-testid="achieve-option">
-                <div className="flex items-center mb-6">
-                  <AchieveSmallLogo />
-                  <span className="ml-3 font-bold text-xl" style={{ color: '#3300FF' }}>achieve</span>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2 border-b border-blue-200">
-                    <span className="text-sm font-medium text-gray-600">Est monthly payment⁵</span>
-                    <span className="font-bold text-xl" style={{ color: '#3300FF' }}>$1,744/mo</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-blue-200">
-                    <span className="text-sm font-medium text-gray-600">Est time to pay off debt⁶</span>
-                    <span className="font-bold text-xl" style={{ color: '#3300FF' }}>4 yr</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm font-medium text-gray-600">Est total debt to pay off⁷</span>
-                    <span className="font-bold text-xl" style={{ color: '#3300FF' }}>$83,730</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-6 rounded-lg border-2 bg-gray-50" style={{ borderColor: '#e5e7eb' }} data-testid="current-option">
-                <h4 className="font-semibold text-xl text-gray-800 mb-6">Current</h4>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-300">
-                    <span className="text-sm font-medium text-gray-600">Est monthly payment⁵</span>
-                    <span className="font-bold text-xl text-gray-800">$2,779/mo</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-300">
-                    <span className="text-sm font-medium text-gray-600">Est time to pay off debt⁶</span>
-                    <span className="font-bold text-xl text-gray-800">43 yr</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm font-medium text-gray-600">Est total debt to pay off⁷</span>
-                    <span className="font-bold text-xl text-gray-800">$276,352</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <Button 
-                className="w-full text-white font-semibold py-4 text-lg rounded-lg"
-                style={{ backgroundColor: '#3300FF' }}
-                data-testid="button-see-options"
-              >
-                See your options
-              </Button>
-              <p className="text-xs text-gray-500 mt-4 text-center" data-testid="disclaimer">
-                Our estimates are based on prior results, which will vary depending on your specific enrolled credit.
-              </p>
-            </div>
+                  Calculate My Savings
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Right side - Chart and warning */}
-          <div className="bg-white rounded-xl p-8 space-y-8">
-            <h3 className="text-2xl font-bold text-center text-gray-800">Save an estimated $1,035 on your monthly payment¹</h3>
-            
-            <div className="h-80 bg-white p-6 rounded-lg border">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={[
-                  { name: 'Achieve', value: 1744, fill: '#3300FF' },
-                  { name: 'Current', value: 2779, fill: '#e5e7eb' },
-                  { name: 'If you wait', value: 3293, fill: '#ef4444' }
-                ]}>
-                  <YAxis 
-                    domain={[0, 3500]}
-                    tickCount={8}
-                    tick={{ fontSize: 12 }}
-                  />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+          {/* Results Panel */}
+          <div className="lg:col-span-2">
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              {/* Current Scenario */}
+              <Card className="border-0 bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-semibold text-gray-800">Current Plan</h4>
+                    <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {Math.ceil(results.currentPayoffTime / 12)} years
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                      <span className="text-sm text-gray-600">Monthly Payment</span>
+                      <span className="font-semibold text-gray-800">{formatCurrency(monthlyPayment)}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                      <span className="text-sm text-gray-600">Total Interest</span>
+                      <span className="font-semibold text-gray-800">{formatCurrency(results.currentTotalInterest)}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600">Total Paid</span>
+                      <span className="font-semibold text-gray-800">{formatCurrency(debtAmount + results.currentTotalInterest)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Achieve Scenario */}
+              <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-semibold text-blue-800">With Achieve</h4>
+                    <Badge className="bg-blue-600 text-white">
+                      <Target className="w-3 h-3 mr-1" />
+                      {Math.ceil(results.achievePayoffTime / 12)} years
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center py-2 border-b border-blue-200">
+                      <span className="text-sm text-gray-600">Monthly Payment</span>
+                      <span className="font-semibold text-blue-800">{formatCurrency(monthlyPayment - results.monthlySavings)}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-blue-200">
+                      <span className="text-sm text-gray-600">Total Interest</span>
+                      <span className="font-semibold text-blue-800">{formatCurrency(results.achieveTotalInterest)}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600">Total Paid</span>
+                      <span className="font-semibold text-blue-800">{formatCurrency(debtAmount + results.achieveTotalInterest)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            <div className="text-center space-y-4 p-6 bg-red-50 rounded-lg border border-red-200">
-              <div className="flex items-center justify-center space-x-2">
-                <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                </svg>
-                <h4 className="text-lg font-bold text-red-800">Don't Wait!</h4>
-              </div>
-              <p className="text-sm text-gray-700">
-                If you wait 3 months, you are estimated to pay <span className="font-bold text-red-600">$51,435</span> more in total debt and <span className="font-bold text-red-600">$514</span> more each month to get rid of your debt.
-              </p>
-              <a href="#" className="text-blue-600 underline font-medium">Explore debt solutions</a>
-            </div>
+            {/* Savings Summary */}
+            <Card className="border-0 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
+              <CardContent className="p-8">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold text-green-800 mb-2">Your Potential Savings</h3>
+                  <p className="text-gray-600">See how much you could save with our debt consolidation program</p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <DollarSign className="w-8 h-8 text-green-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-green-800 mb-1">
+                      {formatCurrency(results.monthlySavings)}
+                    </div>
+                    <div className="text-sm text-gray-600">Monthly Savings</div>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <TrendingDown className="w-8 h-8 text-green-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-green-800 mb-1">
+                      {formatCurrency(results.totalSavings)}
+                    </div>
+                    <div className="text-sm text-gray-600">Total Savings</div>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <TrendingUp className="w-8 h-8 text-green-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-green-800 mb-1">
+                      {Math.ceil((results.currentPayoffTime - results.achievePayoffTime) / 12)}
+                    </div>
+                    <div className="text-sm text-gray-600">Years Saved</div>
+                  </div>
+                </div>
+
+                <div className="mt-8 text-center">
+                  <Button 
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    data-testid="button-get-started"
+                  >
+                    Get Started Today
+                  </Button>
+                  <p className="text-xs text-gray-500 mt-3">
+                    *Results are estimates based on your inputs and may vary based on creditworthiness and other factors.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

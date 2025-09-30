@@ -57,18 +57,32 @@ const tabs = [
 
 export default function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(1); // Start with Personal Loans (Tamara)
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => {
-        const next = (prev + 1) % testimonials.length;
-        console.log(`Carousel rotating from slide ${prev} to ${next}`);
-        return next;
-      });
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentSlide((prev) => {
+          const next = (prev + 1) % testimonials.length;
+          console.log(`Carousel rotating from slide ${prev} to ${next}`);
+          return next;
+        });
+        setIsTransitioning(false);
+      }, 600);
     }, 5000);
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleTabClick = (index: number) => {
+    if (index === currentSlide) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentSlide(index);
+      setIsTransitioning(false);
+    }, 600);
+  };
 
   const activeTestimonial = testimonials[currentSlide];
 
@@ -81,8 +95,8 @@ export default function HeroCarousel() {
             {tabs.map((tab, index) => (
               <button
                 key={tab.id}
-                onClick={() => setCurrentSlide(index)}
-                className={`pb-2 text-lg font-medium transition-all border-b-2 ${
+                onClick={() => handleTabClick(index)}
+                className={`pb-2 text-lg font-medium transition-all duration-300 border-b-2 ${
                   activeTestimonial.tabId === tab.id
                     ? "border-[#3300FF]"
                     : "text-gray-500 border-transparent hover:text-gray-700"
@@ -100,7 +114,12 @@ export default function HeroCarousel() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="space-y-6">
-            <h1 className="text-4xl lg:text-5xl font-bold leading-tight" style={{ color: '#3300FF' }}>
+            <h1 
+              className={`text-4xl lg:text-5xl font-bold leading-tight transition-all duration-700 ${
+                isTransitioning ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
+              }`}
+              style={{ color: '#3300FF' }}
+            >
               {activeTestimonial.name}
               <br />
               <span className="text-gray-900">{activeTestimonial.title.split(' ').slice(1, -2).join(' ')}</span>
@@ -110,7 +129,12 @@ export default function HeroCarousel() {
             
             <div className="space-y-3">
               {activeTestimonial.benefits.map((benefit, index) => (
-                <div key={index} className="flex items-center text-gray-700">
+                <div 
+                  key={index} 
+                  className={`flex items-center text-gray-700 transition-all duration-700 delay-${index * 150} ${
+                    isTransitioning ? 'opacity-0 transform translate-x-4' : 'opacity-100 transform translate-x-0'
+                  }`}
+                >
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
                   <span>{benefit}</span>
                 </div>
@@ -119,7 +143,9 @@ export default function HeroCarousel() {
 
             <Button 
               size="lg" 
-              className="text-white font-semibold px-8 py-4 text-lg rounded-lg"
+              className={`text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-700 delay-450 ${
+                isTransitioning ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
+              }`}
               style={{ backgroundColor: '#3300FF' }}
               data-testid="get-my-rate-button"
             >
@@ -138,7 +164,9 @@ export default function HeroCarousel() {
 
           {/* Right Content - Image with Quote */}
           <div className="relative">
-            <div className="rounded-2xl overflow-hidden shadow-xl">
+            <div className={`rounded-2xl overflow-hidden shadow-xl transition-all duration-700 ${
+              isTransitioning ? 'opacity-0 transform translate-x-8' : 'opacity-100 transform translate-x-0'
+            }`}>
               <img 
                 src={activeTestimonial.image}
                 alt={`${activeTestimonial.name} success story`}
@@ -148,7 +176,9 @@ export default function HeroCarousel() {
             </div>
             
             {/* Quote Overlay */}
-            <div className="absolute bottom-6 left-6 bg-white p-4 rounded-lg shadow-lg max-w-sm">
+            <div className={`absolute bottom-6 left-6 bg-white p-4 rounded-lg shadow-lg max-w-sm transition-all duration-700 delay-300 ${
+              isTransitioning ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
+            }`}>
               <div className="text-2xl mb-2" style={{ color: '#3300FF' }}>"</div>
               <p className="text-gray-900 font-medium mb-2">
                 {activeTestimonial.quote}
